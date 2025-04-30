@@ -1,11 +1,11 @@
 -- "popn_times.lua"
 
-json = require "libraries/json"
+json = require "../libraries/json"
 
-dofile("lib/popn_screens.lua")
+dofile("lib/screens.lua")
 
 local times = {}
-local filename = "data/popn/times.json"
+local filename = "data/times.json"
 local file = io.open(filename, "r")
 if file then
     times = json.decode(file:read("*all"))

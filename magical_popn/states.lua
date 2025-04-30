@@ -2,7 +2,7 @@ local state_path = "../../SNES/State/"
 local stage = 4
 local key = "C"
 
-dofile("lib/popn_screens.lua")
+dofile("lib/screens.lua")
 
 local last_screen = get_screen()
 
