@@ -1,0 +1,3 @@
+[submodule "majoras_mask"]
+	path = majoras_mask
+	url = git@github.com:Kaztalek/mm-lua-scripts.git
