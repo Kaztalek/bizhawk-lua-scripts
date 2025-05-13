@@ -8,6 +8,7 @@ Scripts are for the following games:
 - Junkoid `NES`
 - Magical Pop'n `SNES`
 - Majora's Mask `N64` (https://github.com/Kaztalek/mm-lua-scripts/tree/main)
+- Super Junkoid `SNES`
 - Super Metroid `SNES`
 
 Feel free to just download the specific scripts you want (just check for file imports and download those as well).
