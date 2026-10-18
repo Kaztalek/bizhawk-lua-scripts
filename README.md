@@ -8,6 +8,7 @@ Scripts are for the following games:
 - Junkoid `NES`
 - Magical Pop'n `SNES`
 - Majora's Mask `N64` (https://github.com/Kaztalek/mm-lua-scripts/tree/main)
+- Mario Golf `N64`
 - Super Junkoid `SNES`
 - Super Metroid `SNES`
 
