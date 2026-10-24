@@ -23,3 +23,9 @@ function advance_visual_frame(callback)
         emu.frameadvance()
     end
 end
+
+function advance_frames(amount)
+    for i = 1, amount do
+        advance_visual_frame()
+    end
+end
