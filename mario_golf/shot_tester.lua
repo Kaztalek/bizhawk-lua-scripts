@@ -7,14 +7,15 @@ local addr_angle = 0xfbe48
 
 local angle = mainmemory.read_u16_be(addr_angle)
 local default_bar_length = 29
+local history = {}
+local history_limit = 10
 
 local script_active = true
 local shotRequested = false
 
 -- returns whether or not it updated, so shot can be delayed if necessary
-function set_strength()
+function set_strength(strength)
     local last_val = mainmemory.read_u8(addr_strength)
-    local strength = forms.gettext(dropdown_strength)
     local strength_val = 0
     if strength == "Medium" then
         strength_val = 1
@@ -30,8 +31,9 @@ function import_angle()
 end
 
 function set_angle()
-    local written_angle = tonumber(forms.gettext(textbox_angle))
-    mainmemory.write_u16_be(addr_angle, written_angle)
+    local curr_angle = tonumber(forms.gettext(textbox_angle))
+    mainmemory.write_u16_be(addr_angle, curr_angle)
+    return curr_angle
 end
 
 function get_angle_label_text()
@@ -39,9 +41,11 @@ function get_angle_label_text()
 end
 
 function execute_shot()
-    local delayShot = set_strength()
-    set_angle()
-    local written_bar_length = tonumber(forms.gettext(textbox_bar_length))
+    local curr_strength = forms.gettext(dropdown_strength)
+    local delayShot = set_strength(curr_strength)
+    local curr_angle = set_angle()
+    local curr_bar_length = tonumber(forms.gettext(textbox_bar_length))
+    update_history(curr_strength, curr_angle, curr_bar_length)
     local wasPaused = client.ispaused()
     client.unpause()
     to_fresh_visual_frame()
@@ -50,7 +54,7 @@ function execute_shot()
     end
     advance_visual_frame(function ()
         joypad.set({A=1}, 1)
-        mainmemory.write_u8(addr_bar_length, written_bar_length)
+        mainmemory.write_u8(addr_bar_length, curr_bar_length)
     end)
     advance_visual_frame()
     advance_visual_frame(function ()
@@ -73,18 +77,24 @@ local text_btn_w = 16
 local window_w = 300
 
 local row_power_y = margin_y
+local row_power_h = label_height + btn_height
 local strength_w = 60
 local bar_len_w = 36
 local execute_w = 80
 
-local row_angle_y = row_power_y + label_height + btn_height
+local row_angle_y = row_power_y + row_power_h + margin_y
+local row_angle_h = label_height + btn_height
 local angle_w = 60
 local set_angle_w = 80
 
-local row_game_angle_y = row_angle_y + label_height + btn_height
+local row_game_angle_y = row_angle_y + row_angle_h
+local row_game_angle_h = label_height + btn_height
 local import_angle_w = 92
 
-window = forms.newform(window_w, row_game_angle_y + label_height + btn_height + margin_y, "Shot Tester", function () script_active = false end)
+local row_history_y = row_game_angle_y + row_game_angle_h + margin_y
+local row_history_h = label_height + btn_height * history_limit
+
+window = forms.newform(window_w, row_history_y + row_history_h + margin_y, "Shot Tester", function () script_active = false end)
 
 ------ Power Row
 function update_bar_len(amount)
@@ -120,6 +130,22 @@ forms.label(window, "Angle", margin_x, row_angle_y)
 forms.button(window, "Import angle ↑", import_angle, margin_x, row_game_angle_y + label_height, import_angle_w, btn_height)
 
 angle_label = forms.label(window, get_angle_label_text(), margin_x, row_game_angle_y)
+------
+
+------ History
+function update_history(curr_strength, curr_angle, curr_bar_length)
+    table.insert(history, forms.label(window, "Angle: " .. curr_angle .. ", Power: " .. curr_bar_length .. " (" .. curr_strength .. ")", nil, nil, window_w - 2 * margin_x, label_height))
+    for i = 1, #history do
+        if i > #history - history_limit then
+            forms.setlocation(history[i], margin_x, row_history_y + label_height + btn_height * (#history - i))
+        else
+            -- forms api is weird, doesn't seem to be a way to clear just the label or even write over it for some reason
+            forms.setlocation(history[i], -100, -100)
+        end
+    end
+end
+
+history_label = forms.label(window, "History", margin_x, row_history_y, window_w - 2 * margin_x, label_height)
 ------
 
 local last_angle = angle
