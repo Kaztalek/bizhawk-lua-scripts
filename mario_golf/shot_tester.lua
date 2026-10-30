@@ -93,6 +93,7 @@ local import_angle_w = 92
 
 local row_history_y = row_game_angle_y + row_game_angle_h + margin_y
 local row_history_h = label_height + btn_height * history_limit
+local restore_w = 60
 
 window = forms.newform(window_w, row_history_y + row_history_h + margin_y, "Shot Tester", function () script_active = false end)
 
@@ -133,14 +134,31 @@ angle_label = forms.label(window, get_angle_label_text(), margin_x, row_game_ang
 ------
 
 ------ History
+function restore_shot(index)
+    local shot = history[#history - index + 1]
+    forms.settext(dropdown_strength, shot.strength)
+    forms.settext(textbox_angle, shot.angle)
+    forms.settext(textbox_bar_length, shot.bar_length)
+end
+
 function update_history(curr_strength, curr_angle, curr_bar_length)
-    table.insert(history, forms.label(window, "Angle: " .. curr_angle .. ", Power: " .. curr_bar_length .. " (" .. curr_strength .. ")", nil, nil, window_w - 2 * margin_x, label_height))
-    for i = 1, #history do
-        if i > #history - history_limit then
-            forms.setlocation(history[i], margin_x, row_history_y + label_height + btn_height * (#history - i))
+    table.insert(history, {
+        label = forms.label(window, "Angle: " .. curr_angle .. ", Power: " .. curr_bar_length .. " (" .. curr_strength .. ")", nil, nil, window_w - 3 * margin_x - restore_w, label_height),
+        strength = curr_strength,
+        angle = curr_angle,
+        bar_length = curr_bar_length
+    })
+    local history_count = #history
+    if history_count <= history_limit then
+        forms.button(window, "Restore", function () restore_shot(history_count) end, window_w - margin_x - restore_w, row_history_y + label_height + btn_height * (history_count - 1), restore_w, btn_height)
+    end
+    local limit = math.max(1, history_count - history_limit)
+    for i = history_count, limit, -1 do
+        if i > history_count - history_limit then
+            forms.setlocation(history[i].label, margin_x, row_history_y + label_height + btn_height * (history_count - i) + (btn_height - label_height) / 2)
         else
             -- forms api is weird, doesn't seem to be a way to clear just the label or even write over it for some reason
-            forms.setlocation(history[i], -100, -100)
+            forms.setlocation(history[i].label, -100, -100)
         end
     end
 end
